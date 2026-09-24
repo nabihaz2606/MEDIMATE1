@@ -1,0 +1,423 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MediMate – Smart Medicine Reminder</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body class="high-contrast-theme font-large">
+    <!-- Global Header Bar -->
+    <header class="global-header">
+        <div class="logo-container" onclick="app.navigateTo('welcome-screen')">
+            <span class="logo-icon">💊</span>
+            <span class="logo-text">MediMate</span>
+        </div>
+        <div class="header-actions">
+            <button class="btn-header" onclick="app.navigateTo('language-screen')">
+                <span class="icon">🌐</span> <span id="current-lang-badge">EN</span>
+            </button>
+            <button class="btn-header btn-sos-header" onclick="app.navigateTo('sos-screen')">
+                <span class="icon">🚨</span> SOS
+            </button>
+            <button class="btn-header" onclick="app.navigateTo('settings-screen')">
+                <span class="icon">⚙️</span>
+            </button>
+        </div>
+    </header>
+
+    <!-- Main Application Viewport (14 Screens) -->
+    <main id="app-container">
+
+        <!-- SCREEN 1: Welcome Page -->
+        <section id="welcome-screen" class="screen active">
+            <div class="hero-card">
+                <h1 class="hero-title" data-i18n="welcomeTitle">MediMate – Smart Medicine Reminder</h1>
+                <p class="hero-subtitle" data-i18n="welcomeSubtitle">AI-Powered Multilingual Voice & Scanner Platform for Safe Medicine Management</p>
+                <div class="feature-badges">
+                    <div class="badge"><span class="icon">🗣️</span> Voice Reminders</div>
+                    <div class="badge"><span class="icon">📷</span> Label Scanner</div>
+                    <div class="badge"><span class="icon">👥</span> Caregiver Sync</div>
+                </div>
+                <div class="action-stack">
+                    <button class="btn btn-primary btn-xl" onclick="app.navigateTo('role-screen')" data-i18n="getStarted">GET STARTED</button>
+                    <button class="btn btn-secondary btn-lg" onclick="app.navigateTo('login-screen')" data-i18n="login">LOG IN TO ACCOUNT</button>
+                    <button class="btn btn-audio btn-lg" onclick="app.speakText('welcomeTitle')"><span class="icon">🔊</span> Listen Intro</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- SCREEN 2: Login / Register -->
+        <section id="login-screen" class="screen">
+            <div class="card form-card">
+                <h2 data-i18n="loginTitle">Sign In to MediMate</h2>
+                <p class="form-help" data-i18n="loginHelp">Enter your phone number or PIN, or tap the microphone to speak.</p>
+                
+                <div class="form-group">
+                    <label data-i18n="phoneLabel">Phone Number / PIN</label>
+                    <input type="text" id="login-input" class="input-lg" placeholder="e.g. 9876543210" value="9876543210">
+                </div>
+                
+                <div class="form-group">
+                    <button class="btn btn-voice btn-lg w-100" onclick="app.startVoiceLogin()"><span class="icon">🎙️</span> TAP TO SPEAK LOGIN</button>
+                </div>
+
+                <div class="action-stack">
+                    <button class="btn btn-primary btn-lg" onclick="app.login()" data-i18n="loginBtn">LOG IN</button>
+                    <button class="btn btn-secondary btn-lg" onclick="app.navigateTo('role-screen')" data-i18n="back">BACK</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- SCREEN 3: Role Selection -->
+        <section id="role-screen" class="screen">
+            <h2 class="section-title" data-i18n="selectRoleTitle">Select Your Role</h2>
+            <div class="role-grid">
+                <div class="role-card role-elderly" onclick="app.selectRole('elderly')">
+                    <span class="role-icon">👵👴</span>
+                    <h3 data-i18n="roleElderly">I AM AN ELDERLY USER</h3>
+                    <p data-i18n="roleElderlyDesc">Large buttons, voice reminders, simple intake tracking.</p>
+                    <button class="btn btn-primary btn-lg w-100" data-i18n="enterSeniorMode">ENTER SENIOR MODE</button>
+                </div>
+                <div class="role-card role-caregiver" onclick="app.selectRole('caregiver')">
+                    <span class="role-icon">🧑‍⚕️❤️</span>
+                    <h3 data-i18n="roleCaregiver">I AM A CAREGIVER</h3>
+                    <p data-i18n="roleCaregiverDesc">Remotely add medicines, set reminders, and monitor missed doses.</p>
+                    <button class="btn btn-secondary btn-lg w-100" data-i18n="enterCaregiverMode">ENTER CAREGIVER MODE</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- SCREEN 4: Elderly Dashboard -->
+        <section id="elderly-dashboard" class="screen">
+            <div class="hero-dose-card">
+                <div class="dose-badge">NEXT DOSE DUE</div>
+                <h2 id="hero-dose-title">BP Tablet (Amlodipine 5mg)</h2>
+                <p id="hero-dose-time" class="hero-time"><span class="icon">⏰</span> Today at 8:00 PM (1 Pill)</p>
+                <div class="hero-actions">
+                    <button class="btn btn-primary btn-xl" onclick="app.triggerReminderPopup()" data-i18n="takeNow">TAKE MEDICINE NOW</button>
+                    <button class="btn btn-camera btn-lg" onclick="app.navigateTo('scanner-screen')"><span class="icon">📷</span> Scan Bottle</button>
+                </div>
+            </div>
+
+            <div class="voice-activation-tile" onclick="app.navigateTo('voice-screen')">
+                <div class="mic-orb">🎙️</div>
+                <h3 data-i18n="speakToAssist">TAP TO SPEAK TO MEDIMATE</h3>
+                <p data-i18n="micSubtitle">Ask: "What medicine should I take now?"</p>
+            </div>
+
+            <div class="card-section">
+                <h3 data-i18n="todaySchedule">Today's Medicine Schedule</h3>
+                <div id="elderly-schedule-list" class="medicine-card-stack"></div>
+            </div>
+
+            <div class="bottom-bar-actions mt-lg">
+                <button class="btn btn-secondary btn-lg w-100" onclick="app.navigateTo('history-screen')"><span class="icon">📜</span> <span data-i18n="viewHistory">VIEW MEDICATION HISTORY</span></button>
+            </div>
+        </section>
+
+        <!-- SCREEN 5: Medicine Reminder Popup (Modal) -->
+        <section id="reminder-popup" class="screen modal-screen">
+            <div class="modal-card alert-modal">
+                <div class="alert-flashing-header">
+                    <span class="icon siren-icon">🚨</span>
+                    <h2 data-i18n="reminderAlertHeader">MEDICINE TIME ALERT!</h2>
+                </div>
+                
+                <div class="medicine-detail-preview">
+                    <div class="pill-image-container">
+                        <span class="pill-illustration">💊</span>
+                    </div>
+                    <h3 id="popup-med-name">BP Tablet (Amlodipine 5mg)</h3>
+                    <p id="popup-med-dosage" class="text-highlight">Take 1 Pill with Water</p>
+                    <p id="popup-med-time" class="text-sub">Scheduled: 8:00 PM</p>
+                </div>
+
+                <div class="voice-wave-indicator">
+                    <span class="sound-wave">🔊 Speaking reminder in local language...</span>
+                </div>
+
+                <div class="action-stack-xl">
+                    <button class="btn btn-primary btn-xl" onclick="app.recordIntake('Taken')" data-i18n="confirmTaken">YES, I TOOK MY MEDICINE</button>
+                    <button class="btn btn-camera btn-lg" onclick="app.navigateTo('scanner-screen')"><span class="icon">📷</span> IDENTIFY / SCAN BOTTLE</button>
+                    <button class="btn btn-warning btn-lg" onclick="app.recordIntake('Snoozed')" data-i18n="snooze10">SNOOZE (REMIND IN 10 MINS)</button>
+                    <button class="btn btn-danger btn-lg" onclick="app.recordIntake('Skipped')" data-i18n="skipDose">SKIP THIS DOSE</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- SCREEN 6: Add Medicine -->
+        <section id="add-medicine-screen" class="screen">
+            <div class="card form-card">
+                <h2 data-i18n="addMedicineTitle">Add New Medicine</h2>
+                
+                <div class="form-group">
+                    <button class="btn btn-camera btn-lg w-100" onclick="app.navigateTo('scanner-screen')"><span class="icon">📷</span> SCAN BOTTLE LABEL WITH CAMERA</button>
+                </div>
+
+                <div class="form-group">
+                    <label data-i18n="medNameLabel">Medicine Name</label>
+                    <div class="input-with-mic">
+                        <input type="text" id="add-med-name" class="input-lg" placeholder="e.g. Amlodipine BP Tablet">
+                        <button class="btn-mic-inline" onclick="app.dictateToInput('add-med-name')">🎙️</button>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label data-i18n="dosageLabel">Dosage / Quantity</label>
+                    <div class="stepper-control">
+                        <button class="btn-stepper" onclick="app.adjustStepper('add-med-dosage', -1)">-</button>
+                        <input type="text" id="add-med-dosage" class="input-lg text-center" value="1 Pill">
+                        <button class="btn-stepper" onclick="app.adjustStepper('add-med-dosage', 1)">+</button>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label data-i18n="timeLabel">Reminder Time</label>
+                    <input type="time" id="add-med-time" class="input-lg" value="20:00">
+                </div>
+
+                <div class="form-group">
+                    <label data-i18n="frequencyLabel">Frequency</label>
+                    <select id="add-med-freq" class="input-lg">
+                        <option value="Daily">Daily</option>
+                        <option value="Morning & Evening">Morning & Evening (2x/day)</option>
+                        <option value="As Needed">As Needed</option>
+                    </select>
+                </div>
+
+                <div class="action-stack">
+                    <button class="btn btn-primary btn-lg" onclick="app.saveNewMedicine()" data-i18n="saveMedicine">SAVE MEDICINE REMINDER</button>
+                    <button class="btn btn-secondary btn-lg" onclick="app.backToDashboard()" data-i18n="cancel">CANCEL</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- SCREEN 7: Medicine Scanner -->
+        <section id="scanner-screen" class="screen">
+            <div class="card scanner-card">
+                <h2 data-i18n="scannerTitle">Medicine Label Scanner</h2>
+                <p data-i18n="scannerHelp">Point your camera at the medicine bottle label or barcode.</p>
+
+                <div class="camera-viewport" id="camera-viewport">
+                    <div class="camera-placeholder-graphic">📷</div>
+                    <div class="scan-target-box">
+                        <span class="scan-line"></span>
+                    </div>
+                </div>
+
+                <div class="scan-result-box" id="scan-result-box">
+                    <h4 data-i18n="ocrDetected">Detected Label Data:</h4>
+                    <p id="ocr-text-output" class="text-highlight">Scanning... Position bottle label inside target box.</p>
+                </div>
+
+                <div class="action-stack">
+                    <button class="btn btn-camera btn-lg" onclick="app.simulateScan()"><span class="icon">📷</span> CAPTURE & SCAN LABEL</button>
+                    <button class="btn btn-audio btn-lg" onclick="app.readScanTextAloud()"><span class="icon">🔊</span> READ ALOUD</button>
+                    <button class="btn btn-primary btn-lg" onclick="app.applyScannedMedicine()" data-i18n="useScanned">USE THIS MEDICINE DETAILS</button>
+                    <button class="btn btn-secondary btn-lg" onclick="app.backToDashboard()" data-i18n="back">BACK TO DASHBOARD</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- SCREEN 8: Medication History -->
+        <section id="history-screen" class="screen">
+            <div class="card">
+                <h2 data-i18n="historyTitle">Medication History Logs</h2>
+                <div class="filter-bar">
+                    <button class="btn btn-filter active" onclick="app.filterHistory('all', this)">ALL</button>
+                    <button class="btn btn-filter" onclick="app.filterHistory('Taken', this)">TAKEN</button>
+                    <button class="btn btn-filter" onclick="app.filterHistory('Skipped', this)">SKIPPED</button>
+                </div>
+
+                <div id="history-list" class="history-stack"></div>
+
+                <div class="action-stack mt-lg">
+                    <button class="btn btn-audio btn-lg" onclick="app.readHistorySummary()"><span class="icon">🔊</span> READ SUMMARY ALOUD</button>
+                    <button class="btn btn-secondary btn-lg" onclick="app.backToDashboard()" data-i18n="backToDashboard">BACK TO DASHBOARD</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- SCREEN 9: Voice Assistant -->
+        <section id="voice-screen" class="screen">
+            <div class="card voice-card text-center">
+                <h2 data-i18n="voiceAssistantTitle">MediMate Voice Assistant</h2>
+                <p data-i18n="voiceAssistantHelp">Ask questions about your medicine schedule in your language.</p>
+
+                <div class="mic-orb-animated" id="mic-orb-element" onclick="app.toggleVoiceRecognition()">
+                    <span class="mic-icon">🎙️</span>
+                </div>
+
+                <p id="voice-status" class="voice-status-text">Tap microphone to start speaking...</p>
+
+                <div class="transcript-box">
+                    <label>Speech Transcript:</label>
+                    <p id="voice-transcript" class="transcript-text">"What medicine should I take now?"</p>
+                </div>
+
+                <div class="response-box">
+                    <label>MediMate Response:</label>
+                    <p id="voice-response" class="response-text">"You have 1 medicine scheduled: BP Tablet at 8:00 PM."</p>
+                </div>
+
+                <div class="action-stack mt-md">
+                    <button class="btn btn-primary btn-lg" onclick="app.toggleVoiceRecognition()"><span class="icon">🎙️</span> SPEAK AGAIN</button>
+                    <button class="btn btn-audio btn-lg" onclick="app.repeatVoiceResponse()"><span class="icon">🔊</span> REPEAT ANSWER</button>
+                    <button class="btn btn-secondary btn-lg" onclick="app.backToDashboard()" data-i18n="backToDashboard">BACK TO DASHBOARD</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- SCREEN 10: Language Selection -->
+        <section id="language-screen" class="screen">
+            <div class="card">
+                <h2 data-i18n="languageTitle">Select Language / భాషను ఎంచుకోండి</h2>
+                <p data-i18n="languageHelp">Voice reminders and text will speak in your chosen language.</p>
+
+                <div class="language-grid">
+                    <div class="lang-tile" onclick="app.setLanguage('en')">
+                        <span class="lang-flag">🇬🇧</span>
+                        <h3>English</h3>
+                        <p>English Voice Reminders</p>
+                    </div>
+                    <div class="lang-tile" onclick="app.setLanguage('te')">
+                        <span class="lang-flag">🇮🇳</span>
+                        <h3>తెలుగు (Telugu)</h3>
+                        <p>తెలుగు వాయిస్ రిమైండర్లు</p>
+                    </div>
+                    <div class="lang-tile" onclick="app.setLanguage('hi')">
+                        <span class="lang-flag">🇮🇳</span>
+                        <h3>हिंदी (Hindi)</h3>
+                        <p>हिंदी वॉयस रिमाइंडर</p>
+                    </div>
+                    <div class="lang-tile" onclick="app.setLanguage('ta')">
+                        <span class="lang-flag">🇮🇳</span>
+                        <h3>தமிழ் (Tamil)</h3>
+                        <p>தமிழ் குரல் நினைவூட்டல்கள்</p>
+                    </div>
+                </div>
+
+                <div class="action-stack mt-lg">
+                    <button class="btn btn-primary btn-lg" onclick="app.backToDashboard()" data-i18n="confirmLanguage">CONFIRM & BACK</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- SCREEN 11: Caregiver Dashboard -->
+        <section id="caregiver-dashboard" class="screen">
+            <div class="card caregiver-header-card">
+                <div class="patient-selector">
+                    <span class="icon">👴</span>
+                    <div>
+                        <h3>Monitoring: Senior User (Father)</h3>
+                        <p class="text-sub">Status: Online • Connected via Cloud Sync</p>
+                    </div>
+                </div>
+                <div class="adherence-ring-box">
+                    <div class="ring-score">95%</div>
+                    <p>Weekly Compliance Score</p>
+                </div>
+            </div>
+
+            <div class="caregiver-actions-grid">
+                <button class="btn btn-primary btn-lg" onclick="app.navigateTo('add-medicine-screen')"><span class="icon">➕</span> Add Medicine</button>
+                <button class="btn btn-warning btn-lg" onclick="app.navigateTo('missed-alert-screen')"><span class="icon">🚨</span> Missed Dose Alerts</button>
+                <button class="btn btn-secondary btn-lg" onclick="app.navigateTo('history-screen')"><span class="icon">📜</span> Full History</button>
+                <button class="btn btn-audio btn-lg" onclick="app.sendRemoteNudge()"><span class="icon">🔊</span> Send Voice Nudge</button>
+            </div>
+
+            <div class="card-section mt-md">
+                <h3>Managed Medications for Senior User</h3>
+                <div id="caregiver-med-stack" class="medicine-card-stack"></div>
+            </div>
+        </section>
+
+        <!-- SCREEN 12: Missed-Dose Alert -->
+        <section id="missed-alert-screen" class="screen">
+            <div class="card alert-card">
+                <div class="alert-header">
+                    <span class="icon">⚠️</span>
+                    <h2>MISSED DOSE ALERT!</h2>
+                </div>
+
+                <div class="missed-detail-box">
+                    <h3>Senior User missed scheduled medicine:</h3>
+                    <p class="text-highlight">BP Tablet (Amlodipine 5mg)</p>
+                    <p class="text-danger">Overdue by 30 minutes (Scheduled at 8:00 PM)</p>
+                </div>
+
+                <div class="action-stack-xl mt-md">
+                    <button class="btn btn-danger btn-xl" onclick="app.callPatient()"><span class="icon">📞</span> CALL ELDERLY USER NOW</button>
+                    <button class="btn btn-audio btn-lg" onclick="app.sendRemoteNudge()"><span class="icon">🔊</span> RESEND VOICE REMINDER TO PATIENT</button>
+                    <button class="btn btn-primary btn-lg" onclick="app.markMissedAsTaken()"><span class="icon">✅</span> MARK AS TAKEN MANUALLY</button>
+                    <button class="btn btn-secondary btn-lg" onclick="app.backToDashboard()"><span class="icon">⬅️</span> BACK TO DASHBOARD</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- SCREEN 13: Emergency / SOS -->
+        <section id="sos-screen" class="screen">
+            <div class="card sos-card text-center">
+                <span class="sos-siren-icon">🚨</span>
+                <h2>EMERGENCY ASSISTANCE</h2>
+                <p>Tap the giant red button below to send an immediate help alert to your caregiver.</p>
+
+                <button class="btn-sos-giant" onclick="app.triggerSOSAlert()">
+                    <span>SOS</span>
+                    <small>TAP FOR HELP</small>
+                </button>
+
+                <p id="sos-status" class="text-highlight mt-md">System Ready</p>
+
+                <div class="action-stack mt-lg">
+                    <button class="btn btn-secondary btn-lg" onclick="app.cancelSOS()"><span class="icon">✖️</span> CANCEL / BACK</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- SCREEN 14: Settings & Accessibility -->
+        <section id="settings-screen" class="screen">
+            <div class="card">
+                <h2 data-i18n="settingsTitle">Settings & Accessibility</h2>
+
+                <div class="setting-item">
+                    <label>Font Size</label>
+                    <div class="btn-group">
+                        <button class="btn btn-filter" onclick="app.setFontSize('medium')">Medium</button>
+                        <button class="btn btn-filter active" onclick="app.setFontSize('large')">Large</button>
+                        <button class="btn btn-filter" onclick="app.setFontSize('xlarge')">Extra Large</button>
+                    </div>
+                </div>
+
+                <div class="setting-item mt-md">
+                    <label>High Contrast Theme</label>
+                    <button class="btn btn-primary btn-lg w-100" onclick="app.toggleTheme()">TOGGLE CONTRAST THEME</button>
+                </div>
+
+                <div class="setting-item mt-md">
+                    <label>Voice Speed</label>
+                    <select id="voice-speed-select" class="input-lg" onchange="app.setVoiceSpeed(this.value)">
+                        <option value="0.8">Slow Speech (0.8x)</option>
+                        <option value="1.0" selected>Normal Speech (1.0x)</option>
+                    </select>
+                </div>
+
+                <div class="setting-item mt-md">
+                    <label>Connected Caregiver Phone</label>
+                    <input type="text" id="caregiver-phone-input" class="input-lg" value="+91 98765 43210">
+                </div>
+
+                <div class="action-stack mt-lg">
+                    <button class="btn btn-primary btn-lg" onclick="app.saveSettings()" data-i18n="saveSettings">SAVE PREFERENCES</button>
+                    <button class="btn btn-secondary btn-lg" onclick="app.backToDashboard()" data-i18n="backToDashboard">BACK TO DASHBOARD</button>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <script src="app.js"></script>
+</body>
+</html>
